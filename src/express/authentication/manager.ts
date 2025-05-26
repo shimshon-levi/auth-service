@@ -1,0 +1,68 @@
+import { registerUserSchema, loginUserSchema } from "./validations";
+// import { getUserByEmail, createUser } from "../users/service";
+import bcrypt from "bcryptjs";
+import jwt, { Secret, SignOptions } from "jsonwebtoken";
+import { config } from "../../config/config";
+import { IUser, UserDocument } from "../users/interface";
+import UserModel from "../users/model";
+import { ServiceError } from "../../utils/errors";
+import { RegisterInput } from "./interface";
+
+export class AuthenticationManager {
+  static async register(userData: RegisterInput): Promise<string> {
+    const existing = await UserModel.findOne({ email: userData.email });
+    if (existing) {
+      throw ServiceError.userAlreadyExists(); // 400
+    }
+
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+
+    const user = await UserModel.create({
+      email: userData.email,
+      passwordHash: hashedPassword,
+      name: userData.name,
+      phone: userData.phone,
+      address: userData.address,
+    });
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      "secret@1234",
+      {
+        expiresIn: "1d",
+        algorithm: "HS256",
+      }
+    );
+
+    return token;
+  }
+  static async login(email: string, password: string): Promise<string> {
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      throw ServiceError.userNotFound(); // 404
+    }
+
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) {
+      throw ServiceError.invalidEmailOrPassword();
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      "secret@1234",
+      {
+        expiresIn: "1d",
+        algorithm: "HS256",
+      }
+    );
+    return token;
+  }
+}
