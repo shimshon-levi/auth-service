@@ -8,25 +8,21 @@ export const config = {
       .default("http://localhost:8000/unavailable")
       .asString(),
     maxFileSize: env.get("MAX_FILE_SIZE").default(50000000).asInt(),
+    requestTimeout: env.get("REQUEST_TIMEOUT").default(10000).asIntPositive(),
   },
   mongo: {
     uri: env
       .get("MONGO_URI")
-      .default("mongodb://localhost/smart-docs")
-      .required()
+      .default("mongodb://mongodb:27017/smart-docs")
       .asString(),
     usersCollectionName: env
       .get("USERS_COLLECTION_NAME")
       .default("users")
-      .required()
       .asString(),
   },
 
   authentication: {
-    baseRoute: env
-      .get("AUTHENTICATION_BASE_ROUTE")
-      .default("/api/auth")
-      .asString(),
+    baseRoute: env.get("AUTHENTICATION_BASE_ROUTE").default("/auth").asString(),
     callbackURL: env
       .get("CALLBACK_URL")
       .default("http://localhost:8000/api/auth/callback")
@@ -35,6 +31,13 @@ export const config = {
     secret: env.get("SECRET_KEY").default("secret@1234").asString(),
 
     expiresIn: env.get("ACCESS_TOKEN_EXPIRATION_TIME").default("1d").asString(),
+  },
+  users: {
+    uri: env
+      .get("USERS_SERVICE_URI")
+      .default("http://localhost:8001")
+      .asString(),
+    baseRoute: env.get("USERS_BASE_ROUTE").default("/api/users").asString(),
   },
   cookie: {
     httpOnly: env.get("AUTH_COOKIE_HTTP_ONLY").default("true").asBool(),

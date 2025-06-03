@@ -1,9 +1,11 @@
-// import { Router } from "express";
-// import { register, login } from "./controller";
+import { Router } from "express";
+import { config } from "../../config/config";
+import { wrapProxy } from "../../utils/express/wrappers";
 
-// const router = Router();
+const {
+  users: { uri },
+} = config;
 
-// router.post("/register", register);
-// router.post("/login", login);
+export const usersRouter = Router();
 
-// export default router;
+usersRouter.all("*", wrapProxy(uri));

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authenticationRouter } from "./authentication/router";
-
-// import userRouter from "./users/router";
+import { config } from "../config/config";
+import { usersRouter } from "./users/router";
 
 export const appRouter = Router();
 
@@ -11,7 +11,7 @@ appRouter.get(["/isAlive", "/isalive", "/health"], (req, res) => {
 
 appRouter.use("/auth", authenticationRouter);
 
-// appRouter.use("/users", userRouter);
+// appRouter.use(config.users.baseRoute, usersRouter);
 
 appRouter.get("/", (req, res) => {
   console.log("GET / called");

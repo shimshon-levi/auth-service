@@ -10,7 +10,12 @@ const initializeMongo = async () => {
 
   await mongoose.connect(mongo.uri);
 
-  logger.info("Mongo connection established");
+  logger.info(
+    "Mongo connection established " +
+      mongoose.connection.readyState +
+      " - " +
+      mongoose.connection.name
+  );
 };
 
 const main = async () => {
