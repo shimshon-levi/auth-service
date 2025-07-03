@@ -23,6 +23,7 @@ export class AuthenticationManager {
       name: userData.name,
       phone: userData.phone,
       address: userData.address,
+      role: userData.role,
     });
 
     const token = jwt.sign(

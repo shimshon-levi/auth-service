@@ -8,6 +8,7 @@ export const registerUserBodySchema = z.object({
   name: z.string().min(2),
   phone: z.string().min(9).max(15).optional(),
   address: z.string().min(5).optional(),
+  role: z.enum(["admin", "client"]).default("client"), // ברירת מחדל היא "client"
 });
 
 // סכימה לגוף הבקשה בעת התחברות

@@ -4,4 +4,5 @@ export interface RegisterInput {
   name: string;
   phone?: string;
   address?: string;
+  role?: "admin" | "client";
 }

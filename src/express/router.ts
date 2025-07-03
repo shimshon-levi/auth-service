@@ -3,6 +3,11 @@ import { authenticationRouter } from "./authentication/router";
 import { config } from "../config/config";
 import { usersRouter } from "./users/router";
 
+import { wrapProxy } from "../utils/express/wrappers";
+const {
+  users: { uri },
+} = config;
+
 export const appRouter = Router();
 
 appRouter.get(["/isAlive", "/isalive", "/health"], (req, res) => {
@@ -11,17 +16,9 @@ appRouter.get(["/isAlive", "/isalive", "/health"], (req, res) => {
 
 appRouter.use("/auth", authenticationRouter);
 
-// appRouter.use(config.users.baseRoute, usersRouter);
+// usersRouter.all("*", wrapProxy(uri));
 
-appRouter.get("/", (req, res) => {
-  console.log("GET / called");
-  res.status(200).send(`👋 Hello from ${req.method} ${req.url}`);
-});
-
-// נתיב ברירת מחדל לכל כתובת אחרת שלא קיימת
 // appRouter.use("*", (req, res) => {
 //   console.log(`Wildcard route called for: ${req.method} ${req.url}`);
 //   res.status(404).json({ error: "🔍 הכתובת לא קיימת. זהו שרת API בלבד." });
 // });
-
-console.log("✔️ appRouter setup complete");
