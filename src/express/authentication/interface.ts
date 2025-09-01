@@ -6,3 +6,9 @@ export interface RegisterInput {
   address?: string;
   role?: "admin" | "client";
 }
+
+export interface AuthResult {
+  userId: string;
+  token: string;
+  role: "admin" | "client";
+}

@@ -1,41 +1,22 @@
-// import { Request, Response } from "express";
-// import { registerUserSchema, loginUserSchema } from "./validations";
-// import { createUser, getUserByEmail } from "./manager";
-// import bcrypt from "bcryptjs";
+import { Response } from "express";
+import { updateUserRole } from "./manager";
+import { TypedRequest } from "../../utils/zod";
+import { updateUserRoleSchema } from "./validations";
 
-// export const register = async (req: Request, res: Response) => {
-//   try {
-//     const parsed = registerUserSchema.parse(req.body);
-//     const existingUser = await getUserByEmail(parsed.email);
-//     if (existingUser) {
-//       return res.status(400).json({ message: "User already exists" });
-//     }
+export class UsersAdminController {
+  static async updateRole(
+    req: TypedRequest<typeof updateUserRoleSchema>,
+    res: Response
+  ): Promise<void> {
+    const { id } = req.params;
+    const { role } = req.body;
 
-//     const hashedPassword = await bcrypt.hash(parsed.password, 10);
-//     const newUser = await createUser({ ...parsed, password: hashedPassword });
-//     res.status(201).json({ id: newUser._id, email: newUser.email });
-//   } catch (err) {
-//     res.status(400).json({ message: "Invalid data", error: err });
-//   }
-// };
+    const updated = await updateUserRole(id, role);
+    if (!updated) {
+      res.status(404).json({ message: "User not found" });
+      return; // חשוב: שלא נחזיר Response (שיתאים ל-Promise<void>)
+    }
 
-// export const login = async (req: Request, res: Response) => {
-//   try {
-//     const parsed = loginUserSchema.parse(req.body);
-//     const user = await getUserByEmail(parsed.email);
-
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     const isMatch = await bcrypt.compare(parsed.password, user.password);
-//     if (!isMatch) {
-//       return res.status(401).json({ message: "Invalid credentials" });
-//     }
-
-//     // TODO: JWT generation
-//     res.status(200).json({ message: "Login successful", userId: user._id });
-//   } catch (err) {
-//     res.status(400).json({ message: "Invalid data", error: err });
-//   }
-// };
+    res.json({ userId: updated._id, role: updated.role });
+  }
+}

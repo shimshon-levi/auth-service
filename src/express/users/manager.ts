@@ -13,3 +13,7 @@ export const getUserByEmail = async (email: string) => {
 export const getUserById = async (id: string) => {
   return await UserModel.findById(id);
 };
+
+export const updateUserRole = async (id: string, role: "admin" | "client") => {
+  return await UserModel.findByIdAndUpdate(id, { role }, { new: true });
+};

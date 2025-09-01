@@ -6,10 +6,10 @@ import { config } from "../../config/config";
 import { IUser, UserDocument } from "../users/interface";
 import UserModel from "../users/model";
 import { ServiceError } from "../../utils/errors";
-import { RegisterInput } from "./interface";
+import { AuthResult, RegisterInput } from "./interface";
 
 export class AuthenticationManager {
-  static async register(userData: RegisterInput): Promise<string> {
+  static async register(userData: RegisterInput): Promise<AuthResult> {
     const existing = await UserModel.findOne({ email: userData.email });
     if (existing) {
       throw ServiceError.userAlreadyExists(); // 400
@@ -23,7 +23,7 @@ export class AuthenticationManager {
       name: userData.name,
       phone: userData.phone,
       address: userData.address,
-      role: userData.role,
+      role: "client",
     });
 
     const token = jwt.sign(
@@ -39,9 +39,13 @@ export class AuthenticationManager {
       }
     );
 
-    return token;
+    return {
+      userId: user._id.toString(),
+      token,
+      role: user.role,
+    };
   }
-  static async login(email: string, password: string): Promise<string> {
+  static async login(email: string, password: string): Promise<AuthResult> {
     const user = await UserModel.findOne({ email });
     if (!user) {
       throw ServiceError.userNotFound(); // 404
@@ -64,6 +68,10 @@ export class AuthenticationManager {
         algorithm: "HS256",
       }
     );
-    return token;
+    return {
+      userId: user._id.toString(),
+      token,
+      role: user.role,
+    };
   }
 }

@@ -16,15 +16,22 @@ export class AuthenticationController {
     req: TypedRequest<typeof registerUserSchema>,
     res: Response
   ) {
-    const jwtToken = await AuthenticationManager.register(req.body);
-    setAuthCookie(res, jwtToken);
-    res.json({ token: jwtToken });
+    const { token, userId, role } = await AuthenticationManager.register(
+      req.body
+    );
+    setAuthCookie(res, token);
+    console.log(token, userId, role);
+
+    res.json({ token, userId, role });
   }
 
   static async login(req: TypedRequest<typeof loginUserSchema>, res: Response) {
     const { email, password } = req.body;
-    const jwtToken = await AuthenticationManager.login(email, password);
-    setAuthCookie(res, jwtToken);
-    res.json({ token: jwtToken });
+    const { token, userId, role } = await AuthenticationManager.login(
+      email,
+      password
+    );
+    setAuthCookie(res, token);
+    res.json({ token, userId, role });
   }
 }
