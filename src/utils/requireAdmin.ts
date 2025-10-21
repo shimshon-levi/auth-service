@@ -1,7 +1,10 @@
-// middlewares/requireAdmin.ts
-export function requireAdmin(req, res, next) {
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ message: "Access denied. Admins only." });
+import { RequestHandler } from "express";
+
+export const requireAdmin: RequestHandler = (req, res, next) => {
+  const role = (req as any)?.user?.role;
+  if (role !== "admin") {
+    res.status(403).json({ message: "Admins only" });
+    return;
   }
   next();
-}
+};

@@ -62,15 +62,19 @@ export const wrapProxy = (
  */
 export const validateRequest = (schema: AnyZodObject) => {
   return wrapMiddleware(async (req: Request) => {
-    const { body, query, params } = req;
-    const {
-      body: parsedBody,
-      query: parsedQuery,
-      params: parsedParams,
-    } = await schema.parseAsync({ body, query, params });
+    // 1) פרסינג עם דיפולטים
+    const parsed = await schema.parseAsync({
+      body: req.body ?? {},
+      query: req.query ?? {},
+      params: req.params ?? {},
+    });
 
-    Object.assign(req.body, parsedBody);
-    Object.assign(req.query, parsedQuery);
-    Object.assign(req.params, parsedParams);
+    // 2) ודא ש-body הוא אובייקט ואז מזג
+    if (!(req as any).body) (req as any).body = {};
+    if (parsed.body) Object.assign(req.body as any, parsed.body);
+
+    // 3) query/params: אל תנסה להציב ערך חדש, רק למזג פנימה
+    if (parsed.query) Object.assign(req.query as any, parsed.query);
+    if (parsed.params) Object.assign(req.params as any, parsed.params);
   });
 };

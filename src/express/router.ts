@@ -8,6 +8,8 @@ import { casesGatewayRouter } from "./cases/casesGatewayRouter";
 import { authMiddleware } from "../utils/authMiddleware";
 import { createGatewayRouter } from "../utils/express/proxy";
 import { config } from "../config/config";
+// import { adminRouter } from "./admin/router";
+import { EngagementRouter } from "./clients/router";
 
 export const appRouter = Router();
 
@@ -19,20 +21,12 @@ appRouter.get(["/isAlive", "/isalive", "/health"], (_req, res) => {
 // אימות (לוגין/הרשמה/me/logout) – ללא צורך באימות
 appRouter.use("/auth", authenticationRouter);
 
+// appRouter.use("/auth/admin", adminRouter);
+
 // מכאן – הכל מאובטח JWT פעם אחת גלובלית
 appRouter.use(authMiddleware);
 
-// Gateways (מאותו שירות 8001, אבל baseRoute שונה לכל תחום)
-appRouter.use(
-  "/clients",
-  createGatewayRouter({
-    name: "clients",
-    mountPath: "/clients",
-    targetUri: config.clients.uri,
-    targetBaseRoute: config.clients.baseRoute, // /api/clients
-    requireAuth: true,
-  })
-);
+appRouter.use(config.clients.baseRoute, EngagementRouter);
 
 appRouter.use(
   "/cases",
@@ -64,6 +58,5 @@ appRouter.use(
 //     mountPath: "/public-docs",
 //     targetUri: config.documents.uri,
 //     targetBaseRoute: config.documents.baseRoute,
-//     requireAuth: false,
-//   })
+//     requireAuth: false,//   })
 // );

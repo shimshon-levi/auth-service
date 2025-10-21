@@ -32,7 +32,7 @@ export class AuthenticationManager {
         email: user.email,
         role: user.role,
       },
-      "secret@1234",
+      config.authentication.secret,
       {
         expiresIn: "1d",
         algorithm: "HS256",
@@ -62,7 +62,7 @@ export class AuthenticationManager {
         email: user.email,
         role: user.role,
       },
-      "secret@1234",
+      config.authentication.secret,
       {
         expiresIn: "1d",
         algorithm: "HS256",

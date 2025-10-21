@@ -4,11 +4,11 @@ import { authMiddleware } from "../authMiddleware";
 import { logger } from "../logger";
 
 type GatewayConfig = {
-  name: string; // תווית לוג
-  mountPath: string; // איפה במתאם (auth-service) אנחנו מאזינים (/clients)
-  targetUri: string; // כתובת היעד (http://localhost:8001)
-  targetBaseRoute: string; // באיזה path ה-service downstream מאזין (/api/clients)
-  requireAuth?: boolean; // אם צריך JWT
+  name: string;
+  mountPath: string; // למשל "/cases" (רק ללוגים/מידע)
+  targetUri: string; // למשל "http://localhost:8001"
+  targetBaseRoute: string; // למשל "/api/cases"
+  requireAuth?: boolean;
 };
 
 export function createGatewayRouter({
@@ -20,20 +20,16 @@ export function createGatewayRouter({
 }: GatewayConfig) {
   const r = Router();
 
-  // הפוך pathRewrite אוטומטית אם צריך
-  const needsRewrite = mountPath !== targetBaseRoute;
-  const pathRewrite = needsRewrite
-    ? { [`^${mountPath}`]: targetBaseRoute }
-    : undefined;
-
   // לוג את ההגדרות כבר באתחול
   logger.info(
-    `[GATEWAY] ${name} -> ${targetUri}${targetBaseRoute} (mount: ${mountPath}, rewrite: ${
-      needsRewrite ? JSON.stringify(pathRewrite) : "none"
-    }, auth: ${requireAuth})`
+    `[GATEWAY] ${name} -> ${targetUri}${targetBaseRoute} (mount: ${mountPath}, auth: ${requireAuth})`
   );
 
   if (requireAuth) r.use(authMiddleware);
+
+  // פונקציית rewrite שמדביקה את בסיס היעד לפני ה-path הפנימי של הראוטר
+  const normalize = (s: string) => (s.endsWith("/") ? s.slice(0, -1) : s);
+  const prefix = normalize(targetBaseRoute);
 
   r.use(
     "/",
@@ -41,11 +37,14 @@ export function createGatewayRouter({
       target: targetUri,
       changeOrigin: true,
       proxyTimeout: 30_000,
-      pathRewrite,
+      pathRewrite: (path /* e.g. "/my" */, req) => {
+        // דואגים שלא יהיו "//"
+        const joined = `${prefix}${path.startsWith("/") ? "" : "/"}${path}`;
+        return joined.replace(/\/{2,}/g, "/");
+      },
       on: {
         proxyReq: (proxyReq, req) => fixRequestBody(proxyReq, req as any),
         proxyRes: (proxyRes, req) => {
-          // לוג קליל על כל בקשה עוברת
           logger.info(
             `[PROXY:${name}] ${req.method} ${(req as any).originalUrl} -> ${
               proxyRes.statusCode
